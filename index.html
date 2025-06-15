@@ -45,6 +45,25 @@
       text-align: center;
       margin-bottom: 30px;
       font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #refresh-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 0;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+
+    #refresh-btn:hover {
+      transform: rotate(30deg);
     }
 
     .search-bar {
@@ -126,7 +145,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>CleanUnity Leaderboard 🏆</h1>
+    <h1>
+      CleanUnity Leaderboard 🏆
+      <button id="refresh-btn" title="Refresh leaderboard">🔄</button>
+    </h1>
     <div class="search-bar">
       <input type="text" id="search" placeholder="Search by name..." />
     </div>
@@ -195,6 +217,11 @@
 
     // Refresh every 2 minutes
     setInterval(fetchData, 2 * 60 * 1000);
+
+    // Manual refresh on button click
+    document.getElementById("refresh-btn").addEventListener("click", () => {
+      fetchData();
+    });
 
     // Search functionality
     document.getElementById("search").addEventListener("input", function () {
