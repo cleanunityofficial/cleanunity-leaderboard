@@ -1,26 +1,24 @@
-<script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1vf0Zo33RdqSf3pHc-6vdPyFTkg5Cg-wNCkhtIvXLL6LSrRBbBd5hdyszdLPpMBCSUWBFxpd4HzzT/pub?gid=229848225&single=true&output=csv";
 
 async function fetchData() {
   const res = await fetch(CSV_URL);
   const data = await res.text();
-  const rows = data.trim().split('\n').slice(1); // skip header
+  const rows = data.trim().split('\n').slice(1);
   const tbody = document.getElementById("leaderboard-body");
   tbody.innerHTML = "";
 
   rows.forEach(row => {
-    // Split row into exactly 3 columns: name, points, rank
-    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // handles commas inside quotes
+    // Split into exactly 3 columns: name, points, rank
+    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Handles commas inside quotes
     const [name, points, rank] = cols.map(c => c.replace(/"/g, '').trim());
 
     const tr = document.createElement("tr");
 
     const rankTd = document.createElement("td");
     rankTd.dataset.label = "Rank";
-    const rankNum = parseInt(rank);
-    if (rankNum === 1) rankTd.innerHTML = '<span class="medal">🥇</span>';
-    else if (rankNum === 2) rankTd.innerHTML = '<span class="medal">🥈</span>';
-    else if (rankNum === 3) rankTd.innerHTML = '<span class="medal">🥉</span>';
+    if (parseInt(rank) === 1) rankTd.innerHTML = '<span class="medal">🥇</span>';
+    else if (parseInt(rank) === 2) rankTd.innerHTML = '<span class="medal">🥈</span>';
+    else if (parseInt(rank) === 3) rankTd.innerHTML = '<span class="medal">🥉</span>';
     else rankTd.textContent = rank;
 
     const nameTd = document.createElement("td");
@@ -37,25 +35,3 @@ async function fetchData() {
     tbody.appendChild(tr);
   });
 }
-
-// Initial fetch
-fetchData();
-
-// Refresh every 2 minutes
-setInterval(fetchData, 2 * 60 * 1000);
-
-// Manual refresh on button click
-document.getElementById("refresh-btn").addEventListener("click", () => {
-  fetchData();
-});
-
-// Search functionality
-document.getElementById("search").addEventListener("input", function () {
-  const searchValue = this.value.toLowerCase();
-  const rows = document.querySelectorAll("#leaderboard tbody tr");
-  rows.forEach(row => {
-    const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
-    row.style.display = name.includes(searchValue) ? "" : "none";
-  });
-});
-</script>
