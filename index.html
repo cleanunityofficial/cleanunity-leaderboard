@@ -1,6 +1,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1vf0Zo33RdqSf3pHc-6vdPyFTkg5Cg-wNCkhtIvXLL6LSrRBbBd5hdyszdLPpMBCSUWBFxpd4HzzT/pub?gid=229848225&single=true&output=csv";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1vf0Zo33RdqSf3pHc-6vdPyFTkg5Cg-wNCkhtIvXLL6LSrRBbBd5hdyszdLPpMBCSUWBFxpd4HzzT/pub?output=csv";
 let cachedData = [];
 
 async function fetchData() {
@@ -75,3 +75,4 @@ document.getElementById("search").addEventListener("input", function () {
     });
 });
 </script>
+
