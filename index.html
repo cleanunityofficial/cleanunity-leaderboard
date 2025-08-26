@@ -1,60 +1,41 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1vf0Zo33RdqSf3pHc-6vdPyFTkg5Cg-wNCkhtIvXLL6LSrRBbBd5hdyszdLPpMBCSUWBFxpd4HzzT/pub?gid=229848225&single=true&output=csv";
-let cachedData = [];
 
 async function fetchData() {
-    try {
-        const res = await fetch(CSV_URL);
-        const csvText = await res.text();
-        
-        const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-        cachedData = results.data.map(row => ({
-            name: row['Full Name']?.trim() || '',
-            points: parseInt(row['Points']) || 0,
-            rank: parseInt(row['Rank']) || 0
-        }));
-        
-        renderTable(cachedData);
-    } catch (err) {
-        console.error("Error fetching leaderboard:", err);
-    }
-}
+  const res = await fetch(CSV_URL);
+  const data = await res.text();
+  const rows = data.trim().split('\n').slice(1); // skip header
+  const tbody = document.getElementById("leaderboard-body");
+  tbody.innerHTML = "";
 
-function renderTable(data) {
-    const tbody = document.getElementById("leaderboard-body");
-    tbody.innerHTML = "";
-    
-    // Sort by rank first to respect your original ranking
-    const sortedData = data.sort((a, b) => a.rank - b.rank);
-    
-    const fragment = document.createDocumentFragment();
-    
-    sortedData.forEach((entry, idx) => {
-        const tr = document.createElement("tr");
-        
-        const rankTd = document.createElement("td");
-        rankTd.dataset.label = "Rank";
-        if (idx === 0) rankTd.innerHTML = '<span class="medal">🥇</span>';
-        else if (idx === 1) rankTd.innerHTML = '<span class="medal">🥈</span>';
-        else if (idx === 2) rankTd.innerHTML = '<span class="medal">🥉</span>';
-        else rankTd.textContent = entry.rank || idx + 1;
-        
-        const nameTd = document.createElement("td");
-        nameTd.dataset.label = "Full Name";
-        nameTd.textContent = entry.name;
-        
-        const pointsTd = document.createElement("td");
-        pointsTd.dataset.label = "Points";
-        pointsTd.textContent = entry.points;
-        
-        tr.appendChild(rankTd);
-        tr.appendChild(nameTd);
-        tr.appendChild(pointsTd);
-        fragment.appendChild(tr);
-    });
-    
-    tbody.appendChild(fragment);
+  rows.forEach(row => {
+    // Split row into exactly 3 columns: name, points, rank
+    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // handles commas inside quotes
+    const [name, points, rank] = cols.map(c => c.replace(/"/g, '').trim());
+
+    const tr = document.createElement("tr");
+
+    const rankTd = document.createElement("td");
+    rankTd.dataset.label = "Rank";
+    const rankNum = parseInt(rank);
+    if (rankNum === 1) rankTd.innerHTML = '<span class="medal">🥇</span>';
+    else if (rankNum === 2) rankTd.innerHTML = '<span class="medal">🥈</span>';
+    else if (rankNum === 3) rankTd.innerHTML = '<span class="medal">🥉</span>';
+    else rankTd.textContent = rank;
+
+    const nameTd = document.createElement("td");
+    nameTd.dataset.label = "Full Name";
+    nameTd.textContent = name;
+
+    const pointsTd = document.createElement("td");
+    pointsTd.dataset.label = "Points";
+    pointsTd.textContent = points;
+
+    tr.appendChild(rankTd);
+    tr.appendChild(nameTd);
+    tr.appendChild(pointsTd);
+    tbody.appendChild(tr);
+  });
 }
 
 // Initial fetch
@@ -63,17 +44,18 @@ fetchData();
 // Refresh every 2 minutes
 setInterval(fetchData, 2 * 60 * 1000);
 
-// Manual refresh
-document.getElementById("refresh-btn").addEventListener("click", fetchData);
+// Manual refresh on button click
+document.getElementById("refresh-btn").addEventListener("click", () => {
+  fetchData();
+});
 
 // Search functionality
 document.getElementById("search").addEventListener("input", function () {
-    const searchValue = this.value.toLowerCase();
-    document.querySelectorAll("#leaderboard tbody tr").forEach(row => {
-        const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
-        row.style.display = name.includes(searchValue) ? "" : "none";
-    });
+  const searchValue = this.value.toLowerCase();
+  const rows = document.querySelectorAll("#leaderboard tbody tr");
+  rows.forEach(row => {
+    const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
+    row.style.display = name.includes(searchValue) ? "" : "none";
+  });
 });
 </script>
-
-
