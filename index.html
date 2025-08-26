@@ -170,36 +170,32 @@
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1vf0Zo33RdqSf3pHc-6vdPyFTkg5Cg-wNCkhtIvXLL6LSrRBbBd5hdyszdLPpMBCSUWBFxpd4HzzT/pub?gid=229848225&single=true&output=csv";
 
     async function fetchData() {
-      try {
-        const res = await fetch(CSV_URL);
-        const data = await res.text();
-        const rows = data.trim().split("\n").slice(1); // skip header
-        const tbody = document.getElementById("leaderboard-body");
-        tbody.innerHTML = "";
+      const res = await fetch(CSV_URL);
+      const data = await res.text();
+      const rows = data.trim().split('\n').slice(1);
+      const tbody = document.getElementById("leaderboard-body");
+      tbody.innerHTML = "";
 
-        const leaderboard = rows.map(row => {
-          const cols = row.split(",");
-          return {
-            name: cols[0].trim(),
-            points: parseInt(cols[1].trim()) || 0,
-            rank: cols[2].trim() || ""
-          };
-        });
-
-        // Sort by points descending (optional if already sorted)
-        leaderboard.sort((a, b) => b.points - a.points);
-
-        // Build table rows efficiently
-        const fragment = document.createDocumentFragment();
-        leaderboard.forEach((entry, idx) => {
+      rows
+        .map(row => {
+          const [name, points] = row.split(",");
+          return { name: name.trim(), points: parseInt(points) || 0 };
+        })
+        .sort((a, b) => b.points - a.points)
+        .forEach((entry, idx) => {
           const tr = document.createElement("tr");
 
           const rankTd = document.createElement("td");
           rankTd.dataset.label = "Rank";
-          if (idx === 0) rankTd.innerHTML = "🥇";
-          else if (idx === 1) rankTd.innerHTML = "🥈";
-          else if (idx === 2) rankTd.innerHTML = "🥉";
-          else rankTd.textContent = entry.rank || (idx + 1);
+          if (idx === 0) {
+            rankTd.innerHTML = '<span class="medal">🥇</span>';
+          } else if (idx === 1) {
+            rankTd.innerHTML = '<span class="medal">🥈</span>';
+          } else if (idx === 2) {
+            rankTd.innerHTML = '<span class="medal">🥉</span>';
+          } else {
+            rankTd.textContent = idx + 1;
+          }
 
           const nameTd = document.createElement("td");
           nameTd.dataset.label = "Full Name";
@@ -212,28 +208,26 @@
           tr.appendChild(rankTd);
           tr.appendChild(nameTd);
           tr.appendChild(pointsTd);
-          fragment.appendChild(tr);
+          tbody.appendChild(tr);
         });
-
-        tbody.appendChild(fragment);
-      } catch (err) {
-        console.error("Error loading leaderboard:", err);
-      }
     }
 
     // Initial fetch
     fetchData();
 
-    // Refresh every 1 minute
-    setInterval(fetchData, 60 * 1000);
+    // Refresh every 2 minutes
+    setInterval(fetchData, 2 * 60 * 1000);
 
-    // Manual refresh
-    document.getElementById("refresh-btn").addEventListener("click", fetchData);
+    // Manual refresh on button click
+    document.getElementById("refresh-btn").addEventListener("click", () => {
+      fetchData();
+    });
 
     // Search functionality
     document.getElementById("search").addEventListener("input", function () {
       const searchValue = this.value.toLowerCase();
-      document.querySelectorAll("#leaderboard tbody tr").forEach(row => {
+      const rows = document.querySelectorAll("#leaderboard tbody tr");
+      rows.forEach(row => {
         const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
         row.style.display = name.includes(searchValue) ? "" : "none";
       });
